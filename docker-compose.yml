@@ -66,13 +66,29 @@ services:
       # prettier-ignore
       test: ['CMD-SHELL', 'wget -q --spider --proxy=off localhost:3000/health || exit 1']
     ports:
-      - '127.0.0.1:3000:3000'
+      - "3000:3000"
     depends_on:
       - db
       - redis
       # - es
     volumes:
       - ./public/system:/mastodon/public/system
+
+  http:
+    restart: always
+    image: openresty/openresty
+    container_name: openresty
+    networks:
+      - external_network
+      - internal_network
+    ports:
+      - "8443:443"
+      - "8080:80"
+    volumes:
+      - ./nginx/tmp:/var/run/openresty
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - /etc/letsencrypt/:/etc/letsencrypt/
+      - ./nginx/lebase:/lebase
 
   streaming:
     image: tootsuite/mastodon:v4.0
@@ -86,7 +102,7 @@ services:
       # prettier-ignore
       test: ['CMD-SHELL', 'wget -q --spider --proxy=off localhost:4000/api/v1/streaming/health || exit 1']
     ports:
-      - '127.0.0.1:4000:4000'
+      - 4000:4000
     depends_on:
       - db
       - redis
