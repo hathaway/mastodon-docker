@@ -76,8 +76,7 @@ services:
 
   http:
     restart: always
-    image: openresty/openresty
-    container_name: openresty
+    image: nginx:latest
     networks:
       - external_network
       - internal_network
@@ -85,10 +84,15 @@ services:
       - "8443:443"
       - "8080:80"
     volumes:
-      - ./nginx/tmp:/var/run/openresty
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - /etc/letsencrypt/:/etc/letsencrypt/
-      - ./nginx/lebase:/lebase
+      - ./nginx/conf.d/:/etc/nginx/conf.d/:ro
+      - ./certbot/www/:/var/www/certbot/:ro
+      - ./certbot/conf/:/etc/nginx/ssl/:ro
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
+      - ./certbot/conf/:/etc/letsencrypt/:rw
 
   streaming:
     image: tootsuite/mastodon:v4.0
